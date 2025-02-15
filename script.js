@@ -7,13 +7,22 @@ async function sendMessage() {
 
     document.getElementById("user-input").value = "";
 
-    let response = await fetch("https://huggingface.co/spaces/cooperstark/DeepSeek-Chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: userInput, chat_id: "user1" })
-    });
+    try {
+        let response = await fetch("https://huggingface.co/spaces/cooperstark/DeepSeek-Chat/api/predict/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question: userInput, chat_id: "user1" })
+        });
 
-    let data = await response.json();
-    chatBox.innerHTML += `<div class='bot-message'>${data.answer}</div>`;
-    chatBox.scrollTop = chatBox.scrollHeight;
+        if (!response.ok) {
+            throw new Error(`Server error! Status: ${response.status}`);
+        }
+
+        let data = await response.json();
+        chatBox.innerHTML += `<div class='bot-message'>${data.answer || "No response from AI"}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    } catch (error) {
+        console.error("Fetch error:", error);
+        chatBox.innerHTML += `<div class='bot-message'>Error: Could not connect to AI</div>`;
+    }
 }
